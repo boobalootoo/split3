@@ -1,353 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Species Identification</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://github.com/boobalootoo/split3/blob/main/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Species Identification</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
 </head>
+<body>
+  <div class="container">
+    <div id="table-container"></div>
+    <div id="species-card-container" style="display:none;">
+      <div id="species-card">
+        <button id="close-card-button">Close</button>
+        <img id="species-card-img" alt="Species Card" />
+      </div>
+    </div>
+  </div>
 
-<div class="container">
-  <div id="table-container"></div>
 <script>
-  let csvData = ""; // Define csvData in the global scope
+// Entire JavaScript code you posted above...
 
-  fetch('species-table.html')
-    .then(response => response.text())
-    .then(html => {
-      document.getElementById('table-container').innerHTML = html;
-      // Fetch CSV data and then initialize the rest of the script
-      fetch('uk_species_list.csv')
-        .then(response => response.text())
-        .then(data => {
-          csvData = data;
-          initializeScripts(); // Call function to initialize scripts after data is loaded
-        })
-        .catch(error => console.error('Error fetching CSV:', error));
+// Continue from the cut-off identifySpecies function
+window.identifySpecies = async function() {
+  const input = document.getElementById('imageInput');
+  const file = input.files[0];
+  const taxonId = document.getElementById('groupSelect').value;
+  const resultsDiv = document.getElementById("results");
+  if (resultsDiv) {
+    resultsDiv.innerHTML = "";
+  }
+
+  if (!file) {
+    alert("Please upload an image.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => document.getElementById('preview').src = reader.result;
+  reader.readAsDataURL(file);
+
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("place_id", "6857"); // UK
+  if (taxonId) formData.append("taxon_id", taxonId);
+
+  const apiEndpoint = "https://api.inaturalist.org/v1/computervision/score_image";
+  const apiToken = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjo5MTU4ODEwLCJleHAiOjE3NDUyNTYyMTJ9.RUPbLBMVlyfpFDcadPL5YTs3S3FRPKaYSxHzAN0dHkNdcEzQc-XuOivbhfYDktudEKdD01BHIgUoTqllErClfw";
+
+  try {
+    const res = await fetch(apiEndpoint, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiToken}`
+      },
+      body: formData
     });
 
-  function initializeScripts() {
-    const table = document.getElementById("species-records");
-    const addRowBtn = document.querySelector(".add-row");
-    const speciesCardContainer = document.getElementById("species-card-container");
-    const speciesCard = document.getElementById("species-card");
-    const speciesCardImg = document.getElementById("species-card-img");
-    const closeCardButton = document.getElementById("close-card-button");
-    let autocompleteInputValue = "";
+    const data = await res.json();
 
-    if (table) {
-      table.addEventListener("click", function(event) {
-        if (event.target.classList.contains("submit-btn")) {
-          console.log("Submit button clicked!");
+    if (data.results && data.results.length > 0) {
+      resultsDiv.innerHTML = "<strong>Top Matches:</strong><br>";
+      data.results.forEach(result => {
+        const name = result.taxon.name;
+        const score = (result.score * 100).toFixed(1);
 
-          const row = event.target.closest("tr");
-          const username = row.cells[0].querySelector("input").value.trim() || "Unknown";
-          const species = autocompleteInputValue || row.cells[2].querySelector("input").value.trim() || "Not specified"; // Use autocomplete value
-          const date = row.cells[3].querySelector("input").value.trim() || "No date";
-          const place = row.cells[4].querySelector("input").value.trim() || "Unknown location";
-
-          const record = { username, species, date, place };
-          console.log("Submitting record:", record);
-
-          fetch("https://script.google.com/macros/s/AKfycbwsG06dGQsqT_22efWAZn9RtadK3JKAoINByzP1KLosycvC-Mv2q0S6Se4fdA84tF9pTw/exec", {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(record)
-          })
-          .then(() => {
-            let speciesNameForURL = species.replace(/ /g, '%20');
-            const lowerCaseName = speciesNameForURL.toLowerCase();
-            const capitalizedName = speciesNameForURL.charAt(0).toUpperCase() + speciesNameForURL.slice(1);
-            const imagePath = `https://raw.githubusercontent.com/boobalootoo/CARDDECKDONOTEDIT/main/${capitalizedName}.png`;
-            const imagePathLower = `https://raw.githubusercontent.com/boobalootoo/CARDDECKDONOTEDIT/main/${lowerCaseName}.png`;
-            const imagePathAllLower = `https://raw.githubusercontent.com/boobalootoo/CARDDECKDONOTEDIT/main/${speciesNameForURL.toLowerCase()}.png`;
-
-            const img = new Image();
-            img.src = imagePath;
-            img.onload = () => {
-              speciesCardImg.src = imagePath;
-              speciesCardImg.alt = species;
-              speciesCardContainer.style.display = "flex";
-            };
-            img.onerror = () => {
-              const imgLower = new Image();
-              imgLower.src = imagePathLower;
-              imgLower.onload = () => {
-                speciesCardImg.src = imagePathLower;
-                speciesCardImg.alt = species;
-                speciesCardContainer.style.display = "flex";
-              }
-              imgLower.onerror = () => {
-                const imgAllLower = new Image();
-                imgAllLower.src = imagePathAllLower;
-                imgAllLower.onload = () => {
-                  speciesCardImg.src = imagePathAllLower;
-                  speciesCardImg.alt = species;
-                  speciesCardContainer.style.display = "flex";
-                }
-                imgAllLower.onerror = () => {
-                  alert(`Card for ${species} not found`);
-                }
-              }
-            }
-          })
-          .catch(error => console.error("Error:", error));
-        }
-      });
-    }
-
-    if (addRowBtn) {
-      addRowBtn.addEventListener("click", function() {
-        console.log("Adding a new row");
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = `
-            <td><input type="text" placeholder="Enter username"></td>
-            <td></td>
-            <td>
-                <div id="identification-container">
-                    <h1>UK Species Identifier (Powered by iNaturalist)</h1>
-                    <label for="groupSelect">Select group (optional):</label>
-                    <select id="groupSelect">
-                        <option value="">Any</option>
-                        <option value="3">Animals</option>
-                        <option value="47126">Plants</option>
-                        <option value="47170">Fungi</option>
-                    </select>
-                    <br><br>
-                    <input type="file" id="imageInput" accept="image/*">
-                    <img id="preview" style="max-width: 300px; margin-top: 10px;" />
-                    <br>
-                    <button onclick="identifySpecies()">Identify</button>
-                    <div id="results" style="margin-top: 20px;"></div>
-                    <div class="autocomplete">
-                        <input type="text" id="speciesInput" placeholder="Species you think it is">
-                    </div>
-                </div>
-            </td>
-            <td>
-                <input type="text" class="date" placeholder="Enter manually">
-                <button class="button date-btn" onclick="getDate(this)">USE DEVICE DATE</button>
-            </td>
-            <td>
-                <input type="text" class="place" placeholder="Enter manually">
-                <button class="button location-btn" onclick="getLocation(this)">USE DEVICE LOCATION</button>
-            </td>
-            <td><button class="button submit-btn">SUBMIT</button></td>
-        `;
-        const newCell = newRow.cells[2].querySelector("#speciesInput")
-        autocomplete(newCell, speciesNames);
-        if (table) {
-          table.appendChild(newRow);
-        }
-      });
-    }
-
-    window.getDate = function(button) {
-      button.previousElementSibling.value = new Date().toISOString().split("T")[0];
-    };
-
-    window.getLocation = function(button) {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-           button.previousElementSibling.value = `Lat: ${parseFloat(position.coords.latitude.toFixed(2))}, Lon: ${parseFloat(position.coords.longitude.toFixed(2))}`;
-        });
-      } else {
-        alert("Geolocation is not supported by this browser.");
-      }
-    };
-
-    const speciesListElement = document.getElementById("speciesTable");
-    let speciesNames = [];
-    if (csvData) {
-      const rows = csvData.split("\n").slice(1);
-      speciesNames = rows.flatMap(row => {
-        const columns = row.split(",");
-        return columns.map(col => col.trim());
-      }).filter(Boolean);
-
-      if (speciesListElement && speciesListElement.getElementsByTagName("tbody")[0]) {
-        const speciesList = speciesListElement.getElementsByTagName("tbody")[0];
-        function populateSpeciesTable() {
-          const rows = csvData.split("\n").slice(1);
-          rows.forEach(row => {
-            const columns = row.split(",");
-            const newRow = speciesList.insertRow();
-
-            columns.forEach((column, index) => {
-              const cell = newRow.insertCell(index);
-              const speciesName = column.trim();
-              const encodedSpeciesName = encodeURIComponent(speciesName);
-
-              if (index === 0 || index === 1 || index === 2) {
-                const img = document.createElement("img");
-                img.src = `https://boobalootoo.github.io/simplifiedgame/images/${encodedSpeciesName}.png`;
-                img.alt = speciesName;
-                img.style.width = "50px";
-                img.style.height = "auto";
-                cell.appendChild(img);
-                cell.appendChild(document.createElement("br"));
-                cell.appendChild(document.createTextNode(speciesName));
-              } else {
-                cell.textContent = speciesName;
-              }
-            });
-          });
-        }
-        populateSpeciesTable();
-      }
-    }
-
-    if (closeCardButton) {
-      closeCardButton.addEventListener('click', () => {
-        speciesCardContainer.style.display = 'none';
-        speciesCardImg.src = "";
-        speciesCardImg.alt = "";
-      });
-    }
-
-    function autocomplete(inp, arr) {
-      var currentFocus;
-      inp.addEventListener("input", function(e) {
-        var a, b, i, val = this.value;
-        autocompleteInputValue = val;
-        closeAllLists();
-        if (!val) { return false; }
-        currentFocus = -1;
-        a = document.createElement("div");
-        a.setAttribute("id", this.id + "autocomplete-list");
-        a.setAttribute("class", "autocomplete-items");
-        this.parentNode.appendChild(a);
-        for (i = 0; i < arr.length; i++) {
-          if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-            b = document.createElement("div");
-            b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-            b.innerHTML += arr[i].substr(val.length);
-            b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-            b.addEventListener("click", function(e) {
-              inp.value = this.getElementsByTagName("input")[0].value;
-              autocompleteInputValue = this.getElementsByTagName("input")[0].value;
-              closeAllLists();
-            });
-            a.appendChild(b);
-          }
-        }
-      });
-      inp.addEventListener("keydown", function(e) {
-        var x = document.getElementById(this.id + "autocomplete-list");
-        if (x) x = x.getElementsByTagName("div");
-        if (e.keyCode == 40) {
-          currentFocus++;
-          addActive(x);
-        } else if (e.keyCode == 38) {
-          currentFocus--;
-          addActive(x);
-        } else if (e.keyCode == 13) {
-          e.preventDefault();
-          if (currentFocus > -1) {
-            if (x) x[currentFocus].click();
-          }
-        }
-      });
-      function addActive(x) {
-        if (!x) return false;
-        removeActive(x);
-        if (currentFocus >= x.length) currentFocus = 0;
-        if (currentFocus < 0) currentFocus = (x.length - 1);
-        x[currentFocus].classList.add("autocomplete-active");
-      }
-      function removeActive(x) {
-        for (var i = 0; i < x.length; i++) {
-          x[i].classList.remove("autocomplete-active");
-        }
-      }
-      function closeAllLists(elmnt) {
-        var x = document.getElementsByClassName("autocomplete-items");
-        for (var i = 0; i < x.length; i++) {
-          if (elmnt != x[i] && elmnt != inp) {
-            x[i].parentNode.removeChild(x[i]);
-          }
-        }
-      }
-      document.addEventListener("click", function (e) {
-        closeAllLists(e.target);
-      });
-    }
-
-    const speciesInput = document.getElementById("speciesInput");
-    if (speciesInput && speciesNames.length > 0) {
-      autocomplete(speciesInput, speciesNames);
-    }
-
-    window.identifySpecies = async function() {
-      const input = document.getElementById('imageInput');
-      const file = input.files[0];
-      const taxonId = document.getElementById('groupSelect').value;
-      const resultsDiv = document.getElementById("results");
-      if (resultsDiv) {
-        resultsDiv.innerHTML = "";
-      }
-
-      if (!file) {
-        alert("Please upload an image.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => document.getElementById('preview').src = reader.result;
-      reader.readAsDataURL(file);
-
-      const formData = new FormData();
-      formData.append("image", file);
-      formData.append("place_id", "6857"); // United Kingdom
-      if (taxonId) formData.append("taxon_id", taxonId);
-
-      const apiEndpoint = "https://api.inaturalist.org/v1/computervision/score_image";
-      const apiToken = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjo5MTU4ODEwLCJleHAiOjE3NDUyNTYyMTJ9.RUPbLBMVlyfpFDcadPL5YTs3S3FRPKaYSxHzAN0dHkNdcEzQc-XuOivbhfYDktudEKdD01BHIgUoTqllErClfw";
-
-      try {
-        const res = await fetch(apiEndpoint, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiToken}`
-          },
-          body: formData
+        const option = document.createElement("div");
+        option.className = "prediction";
+        option.innerHTML = `${name} (${score}%)`;
+        option.addEventListener("click", () => {
+          document.getElementById("speciesInput").value = name;
+          autocompleteInputValue = name;
         });
 
-        const data = await res.json();
-
-        if (data.results && data.results.length > 0) {
-          resultsDiv.innerHTML = "<h3>Top UK Species Matches</h3>";
-
-          data.results.slice(0, 3).forEach(result => {
-            const commonName = result.taxon.preferred_common_name || result.taxon.name;
-            const scientificName = result.taxon.name;
-            const score = Math.round(result.score * 100);
-            const image = result.taxon.default_photo?.medium_url || "";
-            const cardName = result.taxon.preferred_common_name || result.taxon.name;
-            const imageUrl = `https://raw.githubusercontent.com/boobalootoo/CARDDECKDONOTEDIT/main/${encodeURIComponent(cardName)}.png`;
-
-            resultsDiv.innerHTML += `
-                <div class="result-card" style="margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-                    <p><strong>${commonName}</strong> (${scientificName})</p>
-                    <p>Confidence: ${score}%</p>
-                    ${image ? `<img src="${image}" style="max-width:200px;">` : ""}
-                    <p><a href="${imageUrl}" target="_blank">View species card</a></p>
-                </div>
-            `;
-          });
-        } else {
-          resultsDiv.innerHTML = "<p>No species match found.</p>";
-        }
-      } catch (error) {
-        resultsDiv.innerHTML = '<div style="color:red;">Error identifying species. Please try again.</div>';
-        console.error('Error:', error);
-      }
+        resultsDiv.appendChild(option);
+      });
+    } else {
+      resultsDiv.innerHTML = "No matches found.";
     }
+  } catch (err) {
+    console.error("Identification error:", err);
+    resultsDiv.innerHTML = "There was an error identifying the species.";
   }
+};
 </script>
 </body>
 </html>
