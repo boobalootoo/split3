@@ -1,1 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Silkscreen&display=swap');
 
+body {
+    font-family: 'Silkscreen', cursive;
+    background-color: skyblue;
+    color: forestgreen;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.button {
+    font-family: 'Silkscreen', cursive;
+    border: 6px solid forestgreen;
+    background: beige;
+    color: forestgreen;
+    padding: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    margin: 5px;
+    box-shadow: 4px 4px forestgreen;
+    width: 100%;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+    color: forestgreen;
+    background-color: beige;
+    border: 8px solid forestgreen;
+    box-shadow: 6px 6px forestgreen;
+    table-layout: fixed;
+}
+
+thead {
+    background-color: beige;
+}
+
+th, td {
+    font-family: 'Silkscreen', cursive;
+    border: 6px solid forestgreen;
+    padding: 12px;
+    text-align: center;
+    background-color: beige;
+    width: 20%;
+    word-wrap: break-word;
+}
+
+input, button {
+    font-family: 'Silkscreen', cursive;
+    background: #9CAF88;
+    color: forestgreen;
+    border: 6px solid forestgreen;
+    padding: 8px;
+    box-shadow: 3px 3px forestgreen;
+    width: 100%;
+    max-width: 300px;
+    box-sizing: border-box;
+}
+
+input[type="text"] {
+    max-width: 200px;
+}
+
+td input {
+    width: 100%;
+}
+
+td button {
+    width: 100%;
+    max-width: 200px;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+    table {
+        width: 100%;
+    }
+
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    input, button {
+        padding: 6px;
+    }
+
+    .button {
+        font-size: 16px;
+    }
+
+    td button {
+        width: 100%;
+        max-width: 150px;
+    }
+}
+
+/* Styles for the card container */
+#species-card-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+/* Styles for the card itself */
+#species-card {
+    width: 200px; /* Reduced width */
+    height: auto;  /* Maintain aspect ratio */
+    border-radius: 8px;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+}
+
+#species-card img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Style for close button */
+#close-card-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #f00;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#close-card-button:hover {
+    background-color: #ff4500;
+}
+
+/* Autocomplete Styles */
+.autocomplete {
+    position: relative;
+    display: inline-block;
+}
+
+.autocomplete-items {
+    position: absolute;
+    border: 1px solid #4CAF50;
+    border-bottom: none;
+    border-top: none;
+    z-index: 1;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+.autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    color: #000;
+}
+
+.autocomplete-items div:hover {
+    background-color: #4CAF50;
+    color: #fff;
+}
+
+.autocomplete-active {
+    background-color: #4CAF50 !important;
+    color: #fff;
+}
