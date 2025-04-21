@@ -1,0 +1,62 @@
+<table>
+    <thead>
+        <tr>
+            <th>USERNAME</th>
+            <th>PHOTO</th>
+            <th>SPECIES NAME</th>
+            <th>DATE</th>
+            <th>PLACE</th>
+            <th>SUBMIT</th>
+        </tr>
+    </thead>
+    <tbody id="species-records">
+        <tr>
+            <td><input type="text" placeholder="Enter username"></td>
+            <td>
+                <div style="max-width: 320px; overflow: hidden;">
+                    <video id="liveCamera" width="100%" height="auto" autoplay style="display: block;"></video>
+                </div>
+                <canvas id="canvas" style="display: none;"></canvas>
+                <br>
+                <input type="file" id="fileInput" accept="image/*">
+                <button id="captureButton">Capture Image</button>
+
+                <p id="status"></p>
+                <div style="text-align: center; margin-top: 10px;">
+                    <button id="zoomIn">+</button>
+                    <button id="zoomOut">-</button>
+                </div>
+            </td>
+            <td>
+                <div id="identification-container">
+                    <h1>UK Species Identifier (Powered by iNaturalist)</h1>
+                    <label for="groupSelect">Select group (optional):</label>
+                    <select id="groupSelect">
+                        <option value="">Any</option>
+                        <option value="3">Animals</option>
+                        <option value="47126">Plants</option>
+                        <option value="47170">Fungi</option>
+                    </select>
+                    <br><br>
+                    <input type="file" id="imageInput" accept="image/*">
+                    <img id="preview" style="max-width: 300px; margin-top: 10px;" />
+                    <br>
+                    <button onclick="identifySpecies()">Identify</button>
+                    <div id="results" style="margin-top: 20px;"></div>
+                    <div class="autocomplete">
+                        <input type="text" id="speciesInput" placeholder="Species you think it is">
+                    </div>
+                </div>
+            </td>
+            <td>
+                <input type="text" class="date" placeholder="Enter manually">
+                <button class="button date-btn" onclick="getDate(this)">USE DEVICE DATE</button>
+            </td>
+            <td>
+                <input type="text" class="place" placeholder="Enter manually">
+                <button class="button location-btn" onclick="getLocation(this)">USE DEVICE LOCATION</button>
+            </td>
+            <td><button class="button submit-btn">SUBMIT</button></td>
+        </tr>
+    </tbody>
+</table>
