@@ -1,89 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Species Identification</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.2.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Species Identification</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
-  <div class="container">
-    <div id="table-container"></div>
-    <div id="species-card-container" style="display:none;">
-      <div id="species-card">
-        <button id="close-card-button">Close</button>
-        <img id="species-card-img" alt="Species Card" />
-      </div>
+    <div class="container">
+        <h1>Species Identification</h1>
+        <div id="table-container"></div>
     </div>
-  </div>
-
-<script>
-// Entire JavaScript code you posted above...
-
-// Continue from the cut-off identifySpecies function
-window.identifySpecies = async function() {
-  const input = document.getElementById('imageInput');
-  const file = input.files[0];
-  const taxonId = document.getElementById('groupSelect').value;
-  const resultsDiv = document.getElementById("results");
-  if (resultsDiv) {
-    resultsDiv.innerHTML = "";
-  }
-
-  if (!file) {
-    alert("Please upload an image.");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = () => document.getElementById('preview').src = reader.result;
-  reader.readAsDataURL(file);
-
-  const formData = new FormData();
-  formData.append("image", file);
-  formData.append("place_id", "6857"); // UK
-  if (taxonId) formData.append("taxon_id", taxonId);
-
-  const apiEndpoint = "https://api.inaturalist.org/v1/computervision/score_image";
-  const apiToken = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VyX2lkIjo5MTU4ODEwLCJleHAiOjE3NDUyNTYyMTJ9.RUPbLBMVlyfpFDcadPL5YTs3S3FRPKaYSxHzAN0dHkNdcEzQc-XuOivbhfYDktudEKdD01BHIgUoTqllErClfw";
-
-  try {
-    const res = await fetch(apiEndpoint, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiToken}`
-      },
-      body: formData
-    });
-
-    const data = await res.json();
-
-    if (data.results && data.results.length > 0) {
-      resultsDiv.innerHTML = "<strong>Top Matches:</strong><br>";
-      data.results.forEach(result => {
-        const name = result.taxon.name;
-        const score = (result.score * 100).toFixed(1);
-
-        const option = document.createElement("div");
-        option.className = "prediction";
-        option.innerHTML = `${name} (${score}%)`;
-        option.addEventListener("click", () => {
-          document.getElementById("speciesInput").value = name;
-          autocompleteInputValue = name;
-        });
-
-        resultsDiv.appendChild(option);
-      });
-    } else {
-      resultsDiv.innerHTML = "No matches found.";
-    }
-  } catch (err) {
-    console.error("Identification error:", err);
-    resultsDiv.innerHTML = "There was an error identifying the species.";
-  }
-};
-</script>
 </body>
 </html>
